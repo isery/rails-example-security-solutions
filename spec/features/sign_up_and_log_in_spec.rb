@@ -49,4 +49,30 @@ describe "Sign Up and Log In", :type => :feature do
     expect(page).to have_link( "Edit",                    :href => edit_article_path(@a) )
   end
 
+  it "can not edit other articles" do
+    @u1 = User.create!( user_data )
+    @u = User.create!( { :name => "michael", :email => "bar@bar.com", :password => "1234567" } )
+    visit "/"
+    click_link "Log in"
+    fill_in "Email",    :with => user_data[:email]
+    fill_in "Password", :with => user_data[:password]
+    click_button "Login"
+    expect(page).to have_text("Logged in as")  
+    visit "/articles"
+    click_link "write new article"
+    fill_in "Title", :with => "Testartikel"
+    fill_in "Description", :with => "Das ist ein Testeintrag"
+    click_button "Create Article"
+    visit "1/edit"
+    expect(page).to have_button("Update Article")
+    click_link "Log out"
+    visit "/"
+    visit "articles/1/edit"
+    expect(page).to_not have_button("Update Article")
+    click_link "Log in"
+    fill_in "Email",    :with => user_data[:email]
+    fill_in "Password", :with => user_data[:password]
+    visit "articles/1/edit"
+    expect(page).to_not have_button("Update Article")
+  end
 end
